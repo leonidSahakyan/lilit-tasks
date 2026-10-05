@@ -6,7 +6,20 @@ Forked from [task-scheduler](https://github.com/leonidSahakyan/task-scheduler) (
 
 ## Columns
 
-`Идеи` → `To Do` → `В работе` → `Готово`. For now agents write their progress and results into the task description. Comments, API keys for agents and webhooks are planned.
+Default columns: `Идеи` → `To Do` → `В работе` → `Готово` (rename freely). For now agents write their progress and results into the task description. Comments and webhooks are planned.
+
+## API keys for bots
+
+Bots and agents call the same REST API as the web app, with `Authorization: Bearer lt_…` instead of a login token. Only the SHA-256 hash of a key is stored. Manage them on the server, with the backend `.env` loaded:
+
+```
+node dist/scripts/api-keys.js bot <username> "<Full Name>"   # bot user: role user, sees all tasks, cannot log in
+node dist/scripts/api-keys.js create <username> <key name>    # prints the key once
+node dist/scripts/api-keys.js list
+node dist/scripts/api-keys.js revoke <key id>
+```
+
+Production has a bot user `lilit-ai` ("Lilit AI") with a key named `claude-code`. The Lilit repo's `scripts/tasks.mjs` uses it.
 
 ## Setup
 

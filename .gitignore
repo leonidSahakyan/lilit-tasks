@@ -1,0 +1,83 @@
+# ================================
+# Backend
+# ================================
+/backend/dist
+/backend/node_modules
+/backend/build
+
+/backend/logs
+/backend/*.log
+/backend/npm-debug.log*
+/backend/pnpm-debug.log*
+/backend/yarn-debug.log*
+/backend/lerna-debug.log*
+
+/backend/.DS_Store
+
+/backend/coverage
+/backend/.nyc_output
+
+/backend/.idea
+/backend/.project
+/backend/.classpath
+/backend/.c9/
+backend/*.launch
+/backend/.settings/
+
+# VSCode specific
+/backend/.vscode/*
+!/backend/.vscode/settings.json
+!/backend/.vscode/tasks.json
+!/backend/.vscode/launch.json
+!/backend/.vscode/extensions.json
+
+/backend/.env.development.local
+/backend/.env.test.local
+/backend/.env.production.local
+/backend/.env.local
+
+/backend/.temp
+/backend/.tmp
+
+/backend/pids
+/backend/*.pid
+/backend/*.seed
+/backend/*.pid.lock
+
+/backend/report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# ================================
+# Frontend
+# ================================
+/frontend/logs
+/frontend/*.log
+/frontend/npm-debug.log*
+/frontend/yarn-debug.log*
+/frontend/yarn-error.log*
+/frontend/pnpm-debug.log*
+/frontend/lerna-debug.log*
+
+/frontend/node_modules
+/frontend/.DS_Store
+/frontend/dist
+/frontend/dist-ssr
+/frontend/coverage
+/frontend/*.local
+
+/frontend/cypress/videos/
+/frontend/cypress/screenshots/
+
+/frontend/.vscode/*
+!/frontend/.vscode/extensions.json
+/frontend/.idea
+/frontend/*.suo
+/frontend/*.ntvs*
+/frontend/*.njsproj
+/frontend/*.sln
+/frontend/*.sw?
+
+/frontend/*.tsbuildinfo
+
+# Environment files hold secrets; see the .env.example files.
+.env
+*/.env

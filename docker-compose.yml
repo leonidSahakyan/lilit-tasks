@@ -1,0 +1,55 @@
+version: '3.9'
+
+services:
+  mysql:
+    image: mysql:8
+    container_name: my-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: justPass
+      MYSQL_DATABASE: task_scheduler
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"] # Исправь на localhost
+      interval: 5s
+      retries: 5
+      timeout: 5s
+
+  backend-migrate:
+    build: ./backend
+    container_name: backend-migrate
+    restart: "no"
+    env_file:
+      - ./backend/.env
+    command: ["npm", "run", "deploy:prod"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+    profiles: ["migrate"]
+
+  backend:
+    build: ./backend
+    container_name: backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    ports:
+      - "3000:3000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  mysql-data:

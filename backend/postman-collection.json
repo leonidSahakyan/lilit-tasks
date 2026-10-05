@@ -1,0 +1,363 @@
+{
+  "info": {
+    "name": "Task Scheduler",
+    "description": "Full API collection for Tasks, Users, Statuses, Auth",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    { "key": "access_token", "value": "", "type": "string" }
+  ],
+
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"username\": \"admin_john\", \"password\": \"admin123\" }"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('access_token', json.access_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
+            }
+          }
+        },
+        {
+          "name": "Toggle Availability",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": {
+              "raw": "{{baseUrl}}/users/3/toggle-availability",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "3", "toggle-availability"]
+            }
+          }
+        },
+        {
+          "name": "Update Permissions",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"permissions\": [\"see_other_tasks\"] }"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/3/permissions",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "3", "permissions"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Statuses",
+      "item": [
+        {
+          "name": "Get All Statuses",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/statuses",
+              "host": ["{{baseUrl}}"],
+              "path": ["statuses"]
+            }
+          }
+        },
+        {
+          "name": "Create Status",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{ \"name\": \"In Progress\" }" },
+            "url": {
+              "raw": "{{baseUrl}}/statuses",
+              "host": ["{{baseUrl}}"],
+              "path": ["statuses"]
+            }
+          }
+        },
+        {
+          "name": "Update Column Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{ \"order\": [2,1,3] }" },
+            "url": {
+              "raw": "{{baseUrl}}/statuses/order",
+              "host": ["{{baseUrl}}"],
+              "path": ["statuses", "order"]
+            }
+          }
+        },
+        {
+          "name": "Update Status Title",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{ \"name\": \"Completed\" }" },
+            "url": {
+              "raw": "{{baseUrl}}/statuses/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["statuses", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Status",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/statuses/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["statuses", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "Get All Tasks (with filters)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks?completed=0&status=1&assignedUserIds=2&dueDate=nextWeek&activity=lastWeek&keyword=report&startDate=2025-09-01&endDate=2025-09-30",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks"],
+              "query": [
+                {
+                  "key": "completed",
+                  "value": "0",
+                  "description": "0 = incomplete, 1 = completed"
+                },
+                { "key": "status", "value": "1", "description": "Status ID" },
+                {
+                  "key": "assignedUserIds",
+                  "value": "2",
+                  "description": "0 = unassigned, -1 = assigned to me"
+                },
+                {
+                  "key": "dueDate",
+                  "value": "nextWeek",
+                  "description": "none, overdue, nextDay, nextWeek, nextMonth"
+                },
+                {
+                  "key": "activity",
+                  "value": "lastWeek",
+                  "description": "lastWeek, lastTwoWeeks, lastFourWeeks, noActivity"
+                },
+                {
+                  "key": "keyword",
+                  "value": "report",
+                  "description": "Search in title/description"
+                },
+                { "key": "startDate", "value": "2025-09-01" },
+                { "key": "endDate", "value": "2025-09-30" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Task By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Task",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"New Task\",\n  \"description\": \"Task description\",\n  \"statusId\": 1,\n  \"assignedUserId\": 2,\n  \"dueDate\": \"2025-09-20T00:00:00.000Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks"]
+            }
+          }
+        },
+        {
+          "name": "Update Task",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Task\",\n  \"description\": \"Updated description\",\n  \"statusId\": 2,\n  \"assignedUserId\": null,\n  \"position\": 3\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tasks/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Task",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", "1"]
+            }
+          }
+        },
+        {
+          "name": "Bulk Update Task Positions",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tasks\": [\n    { \"id\": 1, \"position\": 2, \"statusId\": 1 },\n    { \"id\": 2, \"position\": 1, \"statusId\": 1 }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tasks/bulk-update-positions",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", "bulk-update-positions"]
+            }
+          }
+        },
+        {
+          "name": "Update Task Completed",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{ \"completed\": 1 }" },
+            "url": {
+              "raw": "{{baseUrl}}/tasks/1/completed",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", "1", "completed"]
+            }
+          }
+        },
+        {
+          "name": "Get Tasks Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", "stats"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

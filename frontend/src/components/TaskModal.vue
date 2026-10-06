@@ -1,7 +1,10 @@
 <template>
-  <div class="fixed inset-0 bg-[rgba(0,0,0,0.7)] flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-lg border border-slate-300 w-full max-w-2xl max-h-[90vh] overflow-y-auto" ref="modalRef">
-      <div class="flex items-center justify-between p-6 border-b border-slate-200">
+  <div class="fixed inset-0 bg-[rgba(0,0,0,0.7)] flex items-center justify-center p-2 sm:p-4 z-50">
+    <div
+      class="bg-white rounded-lg border border-slate-300 w-full max-w-4xl max-h-[95dvh] overflow-y-auto overscroll-contain"
+      ref="modalRef"
+    >
+      <div class="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200">
         <h2 class="text-lg font-semibold text-slate-900">Edit Task</h2>
         <button @click="close" class="text-slate-400 hover:text-slate-900 cursor-pointer">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -10,7 +13,7 @@
         </button>
       </div>
 
-      <form @submit.prevent="save" class="p-6 space-y-6">
+      <form @submit.prevent="save" class="p-4 sm:p-6 space-y-6">
         <div class="mb-4">
           <label class="flex items-center gap-2 text-sm font-medium text-slate-900 cursor-pointer">
             <div
@@ -41,8 +44,10 @@
           <label class="block text-sm font-medium text-slate-900 mb-2">Description</label>
           <textarea
             v-model="taskData.description"
-            rows="4"
-            class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 resize-none"
+            ref="descriptionRef"
+            rows="8"
+            @input="fitDescription"
+            class="w-full min-h-40 max-h-[60dvh] px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 leading-relaxed placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 resize-y overflow-y-auto"
           ></textarea>
         </div>
 
@@ -115,7 +120,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, watch, onMounted, onBeforeUnmount, computed } from 'vue'
+import { reactive, ref, watch, onMounted, onBeforeUnmount, computed, nextTick } from 'vue'
 import type { Status, Task, User } from '@/types'
 import TaskActivity from './TaskActivity.vue'
 
@@ -180,6 +185,19 @@ watch(
   { immediate: true },
 )
 
+// The description grows with its text up to max-h (60dvh), then scrolls inside.
+const descriptionRef = ref<HTMLTextAreaElement | null>(null)
+const fitDescription = () => {
+  const el = descriptionRef.value
+  if (!el) return
+  el.style.height = 'auto'
+  el.style.height = `${el.scrollHeight + el.offsetHeight - el.clientHeight}px`
+}
+watch(
+  () => props.task?.description,
+  () => nextTick(fitDescription),
+)
+
 const saving = ref(false)
 
 const save = () => {
@@ -223,6 +241,7 @@ const handleEsc = (e: KeyboardEvent) => {
 }
 
 onMounted(() => {
+  fitDescription()
   window.addEventListener('mousedown', handleClickOutside)
   window.addEventListener('keydown', handleEsc)
 })

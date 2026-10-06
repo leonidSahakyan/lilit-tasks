@@ -6,7 +6,7 @@ Forked from [task-scheduler](https://github.com/leonidSahakyan/task-scheduler) (
 
 ## Columns
 
-Default columns: `Идеи` → `To Do` → `В работе` → `Готово` (rename freely). For now agents write their progress and results into the task description. Comments and webhooks are planned.
+Default columns: `Идеи` → `To Do` → `В работе` → `Готово` (rename freely). Every task has an **Activity** timeline: comments (from the board, agents, Telegram or Lilit's chat; kinds comment, question, answer, report) and history (created, moved, assigned, edited, completed, reopened, commits as GitHub links). API: `GET /api/tasks/:id/activity`, `POST /api/tasks/:id/comments`, `POST /api/tasks/:id/commits`, `POST /api/tasks/:id/reopen`, `GET /api/activity/comment-counts`; live updates over the `task.activity` socket event. Webhooks are planned.
 
 ## API keys for bots
 

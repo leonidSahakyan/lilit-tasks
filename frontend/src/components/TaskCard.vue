@@ -40,7 +40,7 @@
     </span>
     <div
       v-if="assignedUser"
-      class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold absolute bottom-2 right-2"
+      class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold absolute bottom-2 right-2"
       :class="assignedUser.avatarColor"
       :title="assignedUser.fullName"
     >
@@ -114,8 +114,10 @@ const isOverdue = computed(() => {
 })
 
 const assigneeInitial = computed(() => {
+  // Two letters, so "Leonid Sahakyan", "Lilit AI" and "LilitCode" read as LS, LA and LC.
   const name = assignedUser.value?.fullName || ''
-  return name ? name.charAt(0).toUpperCase() : ''
+  const words = name.replace(/([a-z])([A-Z])/g, '$1 $2').split(/\s+/).filter(Boolean)
+  return words.slice(0, 2).map((w) => w.charAt(0).toUpperCase()).join('')
 })
 
 const isHovered = ref(false)

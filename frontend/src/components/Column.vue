@@ -80,7 +80,7 @@
       v-model="column.tasks"
       :group="{ name: 'tasks', pull: true, put: true }"
       item-key="id"
-      :class="['overflow-y-auto flex-1', column.tasks.length ? 'space-y-2 p-4' : '']"
+      :class="['overflow-y-auto flex-1 min-h-[48px]', column.tasks.length ? 'space-y-2 p-4' : '']"
       handle=".task-drag-handle"
       ghost-class="task-ghost"
       chosen-class="drag-over"
@@ -145,7 +145,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'open-task', task: Task): void
-  (e: 'task-status-change', payload: { task: Task; newStatusId: number; newPosition: number }): void
+  (e: 'task-status-change', payload: { taskId: number; newStatusId: number; newPosition: number }): void
   (e: 'add-task', payload: { title: string; columnId: number }): void
   (e: 'delete-column', id: number): void
   (e: 'update-title', payload: { id: number; title: string }): void
@@ -202,11 +202,13 @@ const onToggleComplete = (taskId: number, completed: number) => {
 }
 
 const onTaskDrop = (event: any) => {
-  const task: Task = event.item.__vueParentComponent.props.task
+  // The card's element id is "task-<id>". (Reading the component off the element only works in dev builds.)
+  const taskId = Number(String(event.item.id).replace('task-', ''))
   const newColumnEl = event.to.closest('.column-wrapper')
   const newStatusId = Number(newColumnEl?.dataset.columnId)
   const newPosition = event.newIndex + 1
-  emit('task-status-change', { task, newStatusId, newPosition })
+  if (!taskId || !newStatusId) return
+  emit('task-status-change', { taskId, newStatusId, newPosition })
 }
 
 const confirmDeleteColumn = async () => {

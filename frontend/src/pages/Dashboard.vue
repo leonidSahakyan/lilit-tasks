@@ -247,8 +247,10 @@ const updateTask = async (task: Task) => {
 
 const deleteTask = async (id: number) => await taskService.deleteTask(id)
 
-const onTaskStatusChange = async ({ task, newStatusId, newPosition }: { task: Task; newStatusId: number; newPosition: number }) =>
-  await taskService.moveTask(task, newStatusId, newPosition)
+const onTaskStatusChange = async ({ taskId, newStatusId, newPosition }: { taskId: number; newStatusId: number; newPosition: number }) => {
+  const task = columns.value.flatMap((c) => c.tasks).find((t) => t.id === taskId)
+  if (task) await taskService.moveTask(task, newStatusId, newPosition)
+}
 
 const onUpdateTaskCompleted = async ({ taskId, completed }: { taskId: number; completed: number }) => {
   await taskService.updateTaskCompleted(taskId, completed)

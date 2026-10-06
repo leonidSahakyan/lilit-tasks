@@ -20,6 +20,7 @@ import { SocketService } from '../services/socket.service';
 import { addDays, startOfDay, endOfDay, subDays } from 'date-fns';
 import { getStatsOptimized } from './task-stats.helper';
 import { checkPermission } from '../users/user.helper';
+import { ActivityService } from '../activity/activity.service';
 
 @Injectable()
 export class TasksService {
@@ -28,6 +29,7 @@ export class TasksService {
     @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(Status) private statusRepo: Repository<Status>,
     private readonly socketService: SocketService,
+    private readonly activity: ActivityService,
   ) {}
 
   async findOne(id: number): Promise<Task> {
@@ -185,7 +187,7 @@ export class TasksService {
     );
   }
 
-  async create(dto: CreateTaskDto): Promise<TaskView> {
+  async create(dto: CreateTaskDto, actorId?: number): Promise<TaskView> {
     let user: User | null = null;
     if (dto.assignedUserId) {
       user = await this.userRepo.findOne({ where: { id: dto.assignedUserId } });
@@ -217,6 +219,10 @@ export class TasksService {
     });
 
     const saved = await this.taskRepo.save(task);
+    await this.activity.log(saved.id, actorId, 'created', {
+      status: status.name,
+      assignee: user?.fullName ?? null,
+    });
 
     const taskView = mapTaskToView(saved);
 
@@ -234,7 +240,7 @@ export class TasksService {
     return taskView;
   }
 
-  async update(id: number, dto: UpdateTaskDto): Promise<TaskView> {
+  async update(id: number, dto: UpdateTaskDto, actorId?: number): Promise<TaskView> {
     const task = await this.taskRepo.findOne({
       where: { id },
       relations: ['assignedUser', 'status'],
@@ -244,6 +250,9 @@ export class TasksService {
 
     const oldAssignedUserId = task.assignedUser?.id;
     const oldUserFullName = task.assignedUser?.fullName || null;
+    const oldStatus = task.status;
+    const oldTitle = task.title;
+    const oldDescription = task.description;
 
     task.title = dto.title ?? task.title;
     task.description = dto.description ?? task.description;
@@ -280,6 +289,23 @@ export class TasksService {
     const saved = await this.taskRepo.save(task);
     const taskView = mapTaskToView(saved);
 
+    if (oldStatus?.id !== saved.status.id) {
+      await this.activity.log(id, actorId, 'moved', { from: oldStatus?.name ?? null, to: saved.status.name });
+    }
+    if ((oldAssignedUserId ?? null) !== (newAssignedUserId ?? null)) {
+      await this.activity.log(id, actorId, 'assigned', {
+        from: oldUserFullName,
+        to: newUserFullName,
+        fromId: oldAssignedUserId ?? null,
+        toId: newAssignedUserId ?? null,
+      });
+    }
+    const edited = [
+      saved.title !== oldTitle && 'title',
+      (saved.description ?? '') !== (oldDescription ?? '') && 'description',
+    ].filter(Boolean);
+    if (edited.length) await this.activity.log(id, actorId, 'edited', { fields: edited });
+
     if (dto.assignedUserId !== undefined) {
       if (oldAssignedUserId && oldAssignedUserId !== newAssignedUserId) {
         this.socketService.emitToUser(oldAssignedUserId, 'task.unassigned', {
@@ -312,6 +338,7 @@ export class TasksService {
 
   async updateTasksPositionsBulk(
     dto: UpdateTasksPositionDto,
+    actorId?: number,
   ): Promise<TaskView[]> {
     const updates = dto.tasks;
     const initiatorSocketId = dto.initiatorSocketId;
@@ -320,6 +347,7 @@ export class TasksService {
 
     for (const u of updates) {
       const task = await this.findOne(u.id);
+      const current = await this.taskRepo.findOne({ where: { id: u.id }, relations: ['status'] });
 
       if (u.statusId !== undefined) {
         const status = await this.statusRepo.findOne({
@@ -327,6 +355,9 @@ export class TasksService {
         });
         if (!status) throw new NotFoundException('Status not found');
         task.status = status;
+        if (current?.status && current.status.id !== status.id) {
+          await this.activity.log(u.id, actorId, 'moved', { from: current.status.name, to: status.name });
+        }
       }
 
       task.position = u.position;
@@ -363,8 +394,10 @@ export class TasksService {
     });
     if (!task) throw new NotFoundException('Task not found');
 
+    const changed = Number(task.completed) !== Number(completed);
     task.completed = completed;
     const saved = await this.taskRepo.save(task);
+    if (changed) await this.activity.log(id, currentUserId, completed ? 'completed' : 'uncompleted');
     const taskView = mapTaskToView(saved);
 
     if (initiatorSocketId) {
@@ -400,6 +433,19 @@ export class TasksService {
 
     this.emitStatsUpdate();
     return taskView;
+  }
+
+  // Send a task back to work: To Do, not completed, with an optional comment on what is left.
+  async reopen(id: number, actorId?: number, comment?: string): Promise<TaskView> {
+    const statuses = await this.statusRepo.find({ order: { position: 'ASC' } });
+    const todo = statuses.find((s) => s.name.toLowerCase() === 'to do') ?? statuses[1] ?? statuses[0];
+    if (!todo) throw new NotFoundException('No columns');
+    await this.update(id, { statusId: todo.id }, actorId);
+    await this.updateCompleted(id, 0, actorId ?? 0);
+    await this.activity.log(id, actorId, 'reopened');
+    if (comment?.trim()) await this.activity.addComment(id, actorId ?? null, comment.trim(), 'comment');
+    const task = await this.taskRepo.findOne({ where: { id }, relations: ['assignedUser', 'status'] });
+    return mapTaskToView(task!);
   }
 
   async remove(

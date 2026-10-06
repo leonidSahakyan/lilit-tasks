@@ -9,6 +9,8 @@ import { User } from './users/user.entity';
 import { Task } from './tasks/task.entity';
 import { Status } from './statuses/status.entity';
 import { ApiKey } from './api-keys/api-key.entity';
+import { TaskComment } from './activity/task-comment.entity';
+import { TaskEvent } from './activity/task-event.entity';
 import { SocketModule } from './services/socket.module';
 
 @Module({
@@ -22,7 +24,7 @@ import { SocketModule } from './services/socket.module';
       username: process.env.DB_USER || 'root',
       password: process.env.DB_PASS || '',
       database: process.env.DB_NAME || 'task_scheduler',
-      entities: [User, Task, Status, ApiKey],
+      entities: [User, Task, Status, ApiKey, TaskComment, TaskEvent],
       synchronize: false,
       retryAttempts: 10,
       retryDelay: 10000,

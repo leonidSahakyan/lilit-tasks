@@ -7,15 +7,19 @@ import { UsersModule } from '../users/users.module';
 import { StatusesModule } from '../statuses/statuses.module';
 import { User } from '../users/user.entity';
 import { Status } from '../statuses/status.entity';
+import { TaskComment } from '../activity/task-comment.entity';
+import { TaskEvent } from '../activity/task-event.entity';
+import { ActivityService } from '../activity/activity.service';
+import { ActivityController } from '../activity/activity.controller';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Task, User, Status]),
+    TypeOrmModule.forFeature([Task, User, Status, TaskComment, TaskEvent]),
     UsersModule,
     StatusesModule
   ],
-  controllers: [TasksController],
-  providers: [TasksService],
+  controllers: [TasksController, ActivityController],
+  providers: [TasksService, ActivityService],
   exports: [TasksService],
 })
 export class TasksModule {}

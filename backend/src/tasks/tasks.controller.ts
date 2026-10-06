@@ -45,17 +45,21 @@ export class TasksController {
   }
 
   @Post()
-  create(@Body() dto: CreateTaskDto): Promise<TaskView> {
-    return this.tasksService.create(dto);
+  create(
+    @Body() dto: CreateTaskDto,
+    @CurrentUser() user: { userId: number },
+  ): Promise<TaskView> {
+    return this.tasksService.create(dto, user?.userId);
   }
 
   @Put(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateTaskDto,
+    @CurrentUser() user: { userId: number },
   ): Promise<{ success: boolean }> {
     try {
-      await this.tasksService.update(id, dto);
+      await this.tasksService.update(id, dto, user?.userId);
       return { success: true };
     } catch (err) {
       console.error('Task update failed:', err);
@@ -72,8 +76,11 @@ export class TasksController {
   }
 
   @Patch('bulk-update-positions')
-  async bulkUpdate(@Body() dto: UpdateTasksPositionDto) {
-    return this.tasksService.updateTasksPositionsBulk(dto);
+  async bulkUpdate(
+    @Body() dto: UpdateTasksPositionDto,
+    @CurrentUser() user: { userId: number },
+  ) {
+    return this.tasksService.updateTasksPositionsBulk(dto, user?.userId);
   }
 
   @Patch(':id/completed')

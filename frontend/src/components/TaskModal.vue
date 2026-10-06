@@ -108,6 +108,8 @@
           </div>
         </div>
       </form>
+
+      <TaskActivity v-if="taskData.id" :task-id="taskData.id" class="border-t border-slate-200 pt-6" @reopened="close" />
     </div>
   </div>
 </template>
@@ -115,6 +117,7 @@
 <script setup lang="ts">
 import { reactive, ref, watch, onMounted, onBeforeUnmount, computed } from 'vue'
 import type { Status, Task, User } from '@/types'
+import TaskActivity from './TaskActivity.vue'
 
 const props = defineProps<{ task: Task; statuses: Status[]; users: User[] }>()
 

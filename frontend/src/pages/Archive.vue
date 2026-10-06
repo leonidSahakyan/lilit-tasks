@@ -45,6 +45,7 @@
       :users="users"
       @update-task-completed="onUpdateTaskCompleted"
       @close="selectedTask = null"
+      @archived="load"
       @update="updateTask"
       @delete="deleteTask"
     />

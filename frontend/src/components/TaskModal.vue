@@ -5,7 +5,20 @@
       ref="modalRef"
     >
       <div class="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200">
-        <h2 class="text-lg font-semibold text-slate-900">Edit Task</h2>
+        <div class="flex items-center gap-3">
+          <h2 class="text-lg font-semibold text-slate-900">#{{ taskData.id }}</h2>
+          <button
+            type="button"
+            @click="toggleArchived"
+            :disabled="archiving"
+            class="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-slate-300 rounded-md bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+            </svg>
+            {{ isArchived ? 'Restore' : 'Archive' }}
+          </button>
+        </div>
         <button @click="close" class="text-slate-400 hover:text-slate-900 cursor-pointer">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -123,6 +136,7 @@
 import { reactive, ref, watch, onMounted, onBeforeUnmount, computed, nextTick } from 'vue'
 import type { Status, Task, User } from '@/types'
 import TaskActivity from './TaskActivity.vue'
+import { setTaskArchivedApi } from '@/api/task'
 
 const props = defineProps<{ task: Task; statuses: Status[]; users: User[] }>()
 
@@ -131,6 +145,7 @@ const emit = defineEmits<{
   (e: 'close'): void
   (e: 'delete', taskId: number): void
   (e: 'update-task-completed', payload: { taskId: number; completed: number }): void
+  (e: 'archived', payload: { taskId: number; archived: boolean }): void
 }>()
 
 const taskData = reactive({
@@ -223,6 +238,23 @@ const save = () => {
 }
 
 const close = () => emit('close')
+
+// Archive takes the task off the board, Restore brings it back; the window closes either way.
+const isArchived = computed(() => !!props.task.archived)
+const archiving = ref(false)
+const toggleArchived = async () => {
+  if (archiving.value) return
+  archiving.value = true
+  try {
+    const archived = !isArchived.value
+    await setTaskArchivedApi(taskData.id, archived)
+    emit('archived', { taskId: taskData.id, archived })
+    close()
+  } finally {
+    archiving.value = false
+  }
+}
+
 const deleteTask = () => {
   emit('delete', taskData.id)
   close()

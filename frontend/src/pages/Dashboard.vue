@@ -141,6 +141,7 @@
       :users="users"
       @update-task-completed="onUpdateTaskCompleted"
       @close="closeTaskModal"
+      @archived="({ taskId }) => taskService.handleSocketEvent('deleted', taskId)"
       @update="updateTask"
       @delete="deleteTask"
     />

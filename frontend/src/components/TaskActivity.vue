@@ -1,5 +1,20 @@
 <template>
   <div class="px-6 pb-6">
+    <!-- The latest report, pinned so it is read without scrolling through the activity -->
+    <div v-if="latestReport" class="rounded-md border p-3 mb-6 bg-green-50 border-green-200">
+      <div class="flex items-center gap-2 text-xs text-slate-500 mb-1">
+        <span class="text-sm font-semibold text-slate-900">Report</span>
+        <span class="font-medium text-slate-800">{{ commentAuthor(latestReport) }}</span>
+        <span class="ml-auto">{{ when(latestReport.createdAt) }}</span>
+      </div>
+      <div class="text-sm text-slate-900 whitespace-pre-wrap break-words">
+        <template v-for="(part, i) in linkify(latestReport.body)" :key="i">
+          <a v-if="part.url" :href="part.url" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">{{ part.text }}</a>
+          <span v-else>{{ part.text }}</span>
+        </template>
+      </div>
+    </div>
+
     <h3 class="text-sm font-semibold text-slate-900 mb-3">Activity</h3>
 
     <div v-if="loading" class="text-sm text-slate-400">Loading…</div>
@@ -68,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { addComment, getActivity, reopenTask, type ActivityItem, type CommentItem, type EventItem } from '@/api/activity'
 import { socketService } from '@/services/SocketService'
 
@@ -81,6 +96,10 @@ const draft = ref('')
 const busy = ref(false)
 
 const kindLabel: Record<string, string> = { question: 'question', answer: 'answer', report: 'report' }
+
+const latestReport = computed(() =>
+  items.value.filter((i): i is CommentItem => i.kind === 'comment' && i.commentKind === 'report').pop(),
+)
 
 const load = async () => {
   loading.value = true

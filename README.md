@@ -8,6 +8,10 @@ Forked from [task-scheduler](https://github.com/leonidSahakyan/task-scheduler) (
 
 Default columns: `Идеи` → `To Do` → `В работе` → `Готово` (rename freely). Every task has an **Activity** timeline: comments (from the board, agents, Telegram or Lilit's chat; kinds comment, question, answer, report) and history (created, moved, assigned, edited, completed, reopened, commits as GitHub links). API: `GET /api/tasks/:id/activity`, `POST /api/tasks/:id/comments`, `POST /api/tasks/:id/commits`, `POST /api/tasks/:id/reopen`, `GET /api/activity/comment-counts`; live updates over the `task.activity` socket event. Webhooks are planned.
 
+## Archive
+
+Archived tasks are hidden from the board and from `GET /api/tasks`; the Archive page (the box icon next to the filters) lists them with `GET /api/tasks?archived=1` and can restore them. `PATCH /api/tasks/:id/archived` with `{ "archived": true|false }` archives or restores one task, `POST /api/tasks/archive-done` archives every task in the last column (Done). Reopening a task restores it from the archive.
+
 ## API keys for bots
 
 Bots and agents call the same REST API as the web app, with `Authorization: Bearer lt_…` instead of a login token. Only the SHA-256 hash of a key is stored. Manage them on the server, with the backend `.env` loaded:

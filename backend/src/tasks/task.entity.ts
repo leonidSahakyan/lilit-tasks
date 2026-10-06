@@ -40,4 +40,8 @@ export class Task {
   
   @Column({ type: 'tinyint', default: 0 })
   completed!: number
+
+  // Archived tasks are hidden from the board and shown on the Archive page.
+  @Column({ type: 'tinyint', default: 0 })
+  archived!: number
 }

@@ -78,6 +78,7 @@ export class TasksService {
         'task.createdAt',
         'task.updatedAt',
         'task.completed',
+        'task.archived',
         'user.id',
         'status.id',
       ]);
@@ -105,6 +106,8 @@ export class TasksService {
         }),
       );
     }
+
+    qb.andWhere('task.archived = :archived', { archived: filters.archived ? 1 : 0 });
 
     if (filters.status) {
       qb.andWhere('task.statusId = :status', { status: filters.status });
@@ -167,7 +170,8 @@ export class TasksService {
       });
     }
 
-    qb.orderBy('task.statusId', 'ASC').addOrderBy('task.position', 'ASC');
+    if (filters.archived) qb.orderBy('task.updatedAt', 'DESC');
+    else qb.orderBy('task.statusId', 'ASC').addOrderBy('task.position', 'ASC');
 
     const rawTasks = await qb.getRawMany();
     return rawTasks.map(
@@ -183,6 +187,7 @@ export class TasksService {
           assignedUserId: r.user_id ?? null,
           statusId: r.status_id,
           completed: r.task_completed,
+          archived: r.task_archived,
         }),
     );
   }
@@ -435,11 +440,48 @@ export class TasksService {
     return taskView;
   }
 
+  // Archived tasks leave the board (task.deleted for the board) and come back with task.created.
+  async setArchived(id: number, archived: boolean, actorId?: number): Promise<TaskView> {
+    const task = await this.taskRepo.findOne({ where: { id }, relations: ['assignedUser', 'status'] });
+    if (!task) throw new NotFoundException('Task not found');
+    const view = mapTaskToView(task);
+    if (Boolean(task.archived) === archived) return view;
+
+    task.archived = archived ? 1 : 0;
+    if (!archived) {
+      // Back at the bottom of its column.
+      const max = await this.taskRepo
+        .createQueryBuilder('task')
+        .select('MAX(task.position)', 'max')
+        .where('task.statusId = :statusId AND task.archived = 0', { statusId: task.status.id })
+        .getRawOne<{ max: number }>();
+      task.position = (max?.max ?? 0) + 1;
+    }
+    const saved = mapTaskToView(await this.taskRepo.save(task));
+    await this.activity.log(id, actorId, archived ? 'archived' : 'unarchived');
+
+    if (archived) this.socketService.emitToAll('task.deleted', { id });
+    else this.socketService.emitToAll('task.created', saved);
+    this.socketService.emitToAll('tasks.archived', saved);
+    return saved;
+  }
+
+  // Archive every task in the last column (Done).
+  async archiveDone(actorId?: number): Promise<{ archived: number[] }> {
+    const statuses = await this.statusRepo.find({ order: { position: 'DESC' } });
+    const done = statuses[0];
+    if (!done) return { archived: [] };
+    const tasks = await this.taskRepo.find({ where: { status: { id: done.id }, archived: 0 }, select: ['id'] });
+    for (const t of tasks) await this.setArchived(t.id, true, actorId);
+    return { archived: tasks.map((t) => t.id) };
+  }
+
   // Send a task back to work: To Do, not completed, with an optional comment on what is left.
   async reopen(id: number, actorId?: number, comment?: string): Promise<TaskView> {
     const statuses = await this.statusRepo.find({ order: { position: 'ASC' } });
     const todo = statuses.find((s) => s.name.toLowerCase() === 'to do') ?? statuses[1] ?? statuses[0];
     if (!todo) throw new NotFoundException('No columns');
+    await this.setArchived(id, false, actorId);
     await this.update(id, { statusId: todo.id }, actorId);
     await this.updateCompleted(id, 0, actorId ?? 0);
     await this.activity.log(id, actorId, 'reopened');

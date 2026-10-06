@@ -38,6 +38,7 @@ export interface Filters {
 export interface TaskFilters {
   assignedUserIds?: number[]
   completed?: 0 | 1
+  archived?: 0 | 1
   dueDate?: string
   activity?: 'lastWeek' | 'lastTwoWeeks' | 'lastFourWeeks' | 'noActivity'
   keyword?: string

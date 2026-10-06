@@ -83,6 +83,20 @@ export class TasksController {
     return this.tasksService.updateTasksPositionsBulk(dto, user?.userId);
   }
 
+  @Post('archive-done')
+  archiveDone(@CurrentUser() user: { userId: number }) {
+    return this.tasksService.archiveDone(user?.userId);
+  }
+
+  @Patch(':id/archived')
+  setArchived(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('archived') archived: boolean | number,
+    @CurrentUser() user: { userId: number },
+  ): Promise<TaskView> {
+    return this.tasksService.setArchived(id, archived === true || Number(archived) === 1, user?.userId);
+  }
+
   @Patch(':id/completed')
   async updateCompleted(
     @Param('id') id: number,

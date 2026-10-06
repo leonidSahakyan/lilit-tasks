@@ -3,6 +3,7 @@ import Login from '../pages/Login.vue'
 import Boards from '../pages/Boards.vue'
 import Dashboard from '../pages/Dashboard.vue'
 import Users from '../pages/Users.vue'
+import Archive from '../pages/Archive.vue'
 import { useUserStore } from '../stores/userStore'
 
 const routes = [
@@ -20,6 +21,11 @@ const routes = [
     path: '/dashboard',
     name: 'Dashboard',
     component: Dashboard,
+  },
+  {
+    path: '/archive',
+    name: 'Archive',
+    component: Archive,
   },
   {
     path: '/users',

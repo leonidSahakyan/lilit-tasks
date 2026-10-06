@@ -38,6 +38,16 @@ export const updateTaskCompletedApi = async (id: number, completed: number): Pro
   await api.patch(`/tasks/${id}/completed`, payload)
 }
 
+export const setTaskArchivedApi = async (id: number, archived: boolean): Promise<Task> => {
+  const { data } = await api.patch(`/tasks/${id}/archived`, { archived })
+  return data
+}
+
+export const archiveDoneApi = async (): Promise<{ archived: number[] }> => {
+  const { data } = await api.post('/tasks/archive-done')
+  return data
+}
+
 export const getTaskStats = async (): Promise<TaskStats> => {
   const { data } = await api.get('/tasks/stats')
   return data

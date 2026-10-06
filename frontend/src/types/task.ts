@@ -12,6 +12,7 @@ export interface Task {
   updatedAt: string
   position: number
   completed: number
+  archived?: number
 }
 
 export interface Column {

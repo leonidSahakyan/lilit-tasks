@@ -155,6 +155,10 @@ const eventText = (e: EventItem) => {
       return 'marked it not completed'
     case 'reopened':
       return 'reopened it'
+    case 'archived':
+      return 'moved it to the archive'
+    case 'unarchived':
+      return 'restored it from the archive'
     default:
       return e.type
   }

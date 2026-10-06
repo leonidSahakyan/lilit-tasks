@@ -13,6 +13,7 @@ export function mapTaskToView(task: Task): TaskView {
     updatedAt: task.updatedAt,
     position: task.position,
     completed: task.completed,
+    archived: task.archived,
   });
 }
 // export function mapTasksToView(tasks: Task[]): TaskView[] {

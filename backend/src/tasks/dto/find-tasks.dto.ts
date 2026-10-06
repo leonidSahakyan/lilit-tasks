@@ -24,6 +24,16 @@ export class FindTasksDto {
   })
   completed?: boolean;
 
+  // Without it the board gets only tasks that are not archived.
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => {
+    if (value === '1' || value === 1 || value === true) return true;
+    if (value === '0' || value === 0 || value === false) return false;
+    return value;
+  })
+  archived?: boolean;
+
   @IsOptional()
   @IsString()
   dueDate?: 'none' | 'overdue' | 'nextDay' | 'nextWeek' | 'nextMonth';

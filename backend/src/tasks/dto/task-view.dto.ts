@@ -10,6 +10,7 @@ export class TaskView {
   updatedAt!: Date;
   position!: number;
   completed!: number;
+  archived!: number;
 
   constructor(partial: Partial<TaskView>) {
     Object.assign(this, partial);

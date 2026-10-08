@@ -5,8 +5,8 @@
       <div class="px-6 sm:px-8 lg:px-10">
         <div class="flex items-center justify-between h-16">
           <!-- Logo (Desktop + Mobile) -->
-          <div class="flex items-center gap-3">
-            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+          <div class="flex items-center gap-3 shrink-0">
+            <div class="w-8 h-8 shrink-0 bg-blue-600 rounded-lg flex items-center justify-center">
               <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
@@ -16,8 +16,8 @@
                 />
               </svg>
             </div>
-            <h1 class="text-2xl font-semibold text-slate-900">
-              <router-link :to="'/boards'">TaskFlow</router-link>
+            <h1 class="text-xl sm:text-2xl font-semibold text-slate-900 whitespace-nowrap">
+              <router-link :to="'/boards'">Lilit Tasks</router-link>
             </h1>
           </div>
 
@@ -33,8 +33,8 @@
           </nav>
 
           <!-- Mobile greeting (flex row) -->
-          <div class="md:hidden flex-1 flex items-center justify-end space-x-3">
-            <span class="text-sm font-semibold text-slate-500">Hello, {{ userStore.user?.fullName || 'User' }}!</span>
+          <div class="md:hidden flex-1 min-w-0 flex items-center justify-end space-x-3 ml-3">
+            <span class="text-sm font-semibold text-slate-500 truncate">Hello, {{ userStore.user?.fullName || 'User' }}!</span>
           </div>
         </div>
       </div>
